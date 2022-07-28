@@ -1,11 +1,11 @@
 import './bootstrap.css';
 import './App.scss';
 import Create from './Components/Create';
-import Edit from './Components/Edit';
 import AnimalsContext from './Components/AnimalsContext';
 import { useEffect, useState } from 'react';
-import { create, destroy, read } from './Functions/localstorage';
+import { create, destroy, read, update } from './Functions/localstorage';
 import List from './Components/List';
+import Edit from './Components/Edit';
 
 const keyLock = 'myFantasticZoo';
 const animalsTypes = [
@@ -19,17 +19,18 @@ const animalsTypes = [
 
 function App() {
 
-  const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [lastUpdate, setLastUpdate] = useState(Date.now())
 
   const [modalData, setModalData] = useState(null);
-
+  
   const [createData, setCreateData] = useState(null);
   const [deleteData, setDeleteData] = useState(null);
+  const [editData, setEditData] = useState(null);
   const [animals, setAnimals] = useState(null);
 
   useEffect(() => {
-    setAnimals(read(keyLock));
-  }, [lastUpdate])
+    setAnimals(read(keyLock).sort((a, b) => a.id - b.id));
+  }, [lastUpdate]);
 
   useEffect(() => {
     if (null === createData) {
@@ -37,7 +38,7 @@ function App() {
     }
     create(keyLock, createData);
     setLastUpdate(Date.now());
-    }, [createData]);
+  }, [createData]);
 
   useEffect(() => {
     if (null === deleteData) {
@@ -45,7 +46,16 @@ function App() {
     }
     destroy(keyLock, deleteData);
     setLastUpdate(Date.now());
-    }, [deleteData]);
+  }, [deleteData]);
+
+  useEffect(() => {
+    if (null === editData) {
+      return;
+    }
+    update(keyLock, editData, editData.id);
+    setLastUpdate(Date.now());
+  }, [editData]);
+
 
 
   return (
@@ -54,8 +64,9 @@ function App() {
       setCreateData,
       animals,
       setDeleteData,
-      modalData, 
-      setModalData
+      modalData,
+      setModalData,
+      setEditData
     }}>
       <div className="container">
         <div className="row">
@@ -63,11 +74,11 @@ function App() {
             <Create />
           </div>
           <div className="col-8">
-            <List/>
+            <List />
           </div>
         </div>
       </div>
-      <Edit />
+      <Edit/>
     </AnimalsContext.Provider>
   );
 }
